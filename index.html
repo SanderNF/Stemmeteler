@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            --Card-BG: #222222;
+            --Card-Color: #fff;
+        }
+
+        .navbar {
+            width: 100%;
+            height: 50px;
+            background-color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .col {
+            width: 25vw;
+            height: 17.5vw;
+            margin: 10px;
+            background-color: var(--Card-BG);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--Card-Color);
+            padding: 20px;
+            transition: 0.5s;
+        }
+
+        .card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .card h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar"></div>
+
+    <div class="container">
+        
+    </div>
+
+
+
+
+
+        <script>
+
+            cloumns = 3;
+
+            valgmuligheter = [
+                {
+                    title: "valg #1",
+                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
+                    BGimage: "BG-IMGs/BG-IMG-1",
+                },
+                {
+                    title: "valg #2",
+                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
+                    BGimage: "BG-IMGs/BG-IMG-2",
+                },
+                {
+                    title: "valg #3",
+                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
+                    BGimage: "BG-IMGs/BG-IMG-3",
+                },
+                {
+                    title: "valg #4",
+                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
+                    BGimage: "BG-IMGs/BG-IMG-4",
+                }
+            ]
+
+            function buildOptions() {
+                console.log("loaded");
+                rows = Math.ceil(valgmuligheter.length / cloumns);
+                for (let i = 0; i < rows; i++) {
+                    let row = document.createElement("div");
+                    row.classList.add("row");
+                    row.id = `row-${i}`;
+                    for (let j = 0; j < cloumns; j++) {
+                        let index = i * cloumns + j;
+                        if (index >= valgmuligheter.length) {
+                            break;
+                        }
+                        let valg = valgmuligheter[index];
+                        let col = document.createElement("div");
+                        col.classList.add("col");
+                        col.id = `col-${j}`;
+                        col.innerHTML = `
+                            <div class="card" style="background-image: url(${valg.BGimage})">
+                                <img src="${valg.logo}.jpeg" alt="${valg.title}'s logo">
+                                <h2>${valg.title}</h2>
+                                <p>${valg.description}</p>
+                            </div>
+                        `;
+                        row.appendChild(col);
+                    }
+                    document.querySelector(".container").appendChild(row);
+                }
+            };
+
+            buildOptions();
+        </script>
+</body>
+</html>
