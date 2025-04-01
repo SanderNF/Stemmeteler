@@ -118,27 +118,41 @@
                 }
             ]
 
+
+            function fetchCandidates() {
+                fetch("http://localhost:3000/candidates")
+                    .then(res => res.json())
+                    .then(data => {
+                        valgmuligheter = data;
+                        buildOptions();
+                    });
+            }
+
             function addVote(valg, title) {
                 console.log(valg);
-                console.log(localStorage);
-                if (!localStorage[`${valg}.votes`]) {
-                    localStorage[`${valg}.votes`] = 0;
-                }
-                if (localStorage[`${valg}.title`] == title) {
-                    localStorage[`${valg}.votes`] = (Number(localStorage[`${valg}.votes`]) + 1);
-                } else {
-                    console.error("title does not match");
+                
+                const vote = valg;
+                const voteTitle = title;
+                const voter = "voter1";
+                const ID = "01011970123"
+
+                const voterID = "";
+
+                try {
+                    let response = await fetch("http://localhost:3000/votes", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            vote: vote,
+                            voteTitle: voteTitle,
+                            voterID: voterID,
+                        })
+                    });
                 }
             }
 
             function buildOptions() {
-                let constructLocal = false;
-                if (localStorage.votes) {
-                    constructLocal = false;
-                } else {
-                    //localStorage.votes = {};
-                    constructLocal = true;
-                }
+                
                 console.log("loaded");
                 rows = Math.ceil(valgmuligheter.length / cloumns);
                 for (let i = 0; i < rows; i++) {
@@ -150,10 +164,7 @@
                         if (index >= valgmuligheter.length) {
                             break;
                         }
-                        if (constructLocal) {
-                            localStorage[`${index}.title`] = valgmuligheter[index].title,
-                            localStorage[`${index}.votes`] = 0
-                        }
+                        
                         let valg = valgmuligheter[index];
                         let col = document.createElement("div");
                         col.classList.add("col");
