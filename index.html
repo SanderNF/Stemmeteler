@@ -118,7 +118,27 @@
                 }
             ]
 
+            function addVote(valg, title) {
+                console.log(valg);
+                console.log(localStorage);
+                if (!localStorage[`${valg}.votes`]) {
+                    localStorage[`${valg}.votes`] = 0;
+                }
+                if (localStorage[`${valg}.title`] == title) {
+                    localStorage[`${valg}.votes`] = (Number(localStorage[`${valg}.votes`]) + 1);
+                } else {
+                    console.error("title does not match");
+                }
+            }
+
             function buildOptions() {
+                let constructLocal = false;
+                if (localStorage.votes) {
+                    constructLocal = false;
+                } else {
+                    //localStorage.votes = {};
+                    constructLocal = true;
+                }
                 console.log("loaded");
                 rows = Math.ceil(valgmuligheter.length / cloumns);
                 for (let i = 0; i < rows; i++) {
@@ -130,12 +150,16 @@
                         if (index >= valgmuligheter.length) {
                             break;
                         }
+                        if (constructLocal) {
+                            localStorage[`${index}.title`] = valgmuligheter[index].title,
+                            localStorage[`${index}.votes`] = 0
+                        }
                         let valg = valgmuligheter[index];
                         let col = document.createElement("div");
                         col.classList.add("col");
                         col.id = `col-${j}`;
                         col.innerHTML = `
-                            <div class="card" style="background-image: url(${valg.BGimage})">
+                            <div class="card" style="background-image: url(${valg.BGimage})" onclick="addVote(${index}, ${valg.title})">
                                 <img src="${valg.logo}.jpeg" alt="${valg.title}'s logo">
                                 <h2>${valg.title}</h2>
                                 <p>${valg.description}</p>
