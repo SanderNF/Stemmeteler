@@ -22,21 +22,42 @@ app.use(cors());
 
 app.get('/candidates', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM votingApp.candidates');
-        res.json(rows);
+        const result = await pool.query('SELECT * FROM candidates');
+        res.json(result.rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
+
+async function checkVotes(voter_id) {
+    try {
+        const result = await pool.query('SELECT voter_id FROM votes');
+        for (let i = 0; i < result.rows.length; i++) {
+            if (result.rows[i].voter_id === voter_id) {
+                return true;
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error(`500, Error: ${error}`);
+        return `500, Error: ${error.message}`;
+    }
+}
+
 app.post('/vote', async (req, res) => {
     const { candidateId } = req.body;
     try {
-        const { voterID, candidateVote } = req.body;
+        const { voted_for_candidate, voter_id, voted_for_candidate_numb } = req.body;
+
+        if (await checkVotes(voter_id)) {
+            res.status(400).json({ message: 'You have already voted' });
+            return;
+        }
 
         const result = await pool.query(
-            'INSERT INTO votingApp.votes (voter_id, candidate_id) VALUES ($1, $2)',
-            [voterID, candidateVote]
+            'INSERT INTO votes (voted_for_candidate, voter_id, voted_for_candidate_numb) VALUES ($1, $2, $3)',
+            [voted_for_candidate, voter_id, voted_for_candidate_numb]
         );
 
         res.status(201).json({ message: 'Vote has been cast' , user: result.rows[0] });

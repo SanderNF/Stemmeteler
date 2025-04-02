@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="packages\js-crypto-aes\src\webapi.ts" type="typescript"></script>
     <style>
         body {
             margin: 0;
@@ -83,6 +84,11 @@
 <body>
     <div class="navbar"></div>
 
+    <div class="login">
+        <h3>Ditt fulle navn <input id="NAVN" type="text" placeholder="Fornavn Melomnavn Etternavn "></h3>
+        <h3>føtselsdato <input id="ID" type="text" placeholder="12345678901"></h3>
+    </div>
+
     <div class="container">
         
     </div>
@@ -92,6 +98,8 @@
 
 
         <script>
+            const aes = window.jscaes;
+            console.log(aes, "AES");
 
             cloumns = 3;
 
@@ -119,35 +127,65 @@
             ]
 
 
-            function fetchCandidates() {
-                fetch("http://localhost:3000/candidates")
-                    .then(res => res.json())
-                    .then(data => {
-                        valgmuligheter = data;
-                        buildOptions();
-                    });
+            async function fetchCandidates() {
+                try {
+                    fetch("http://localhost:3000/candidates")
+                        .then(res => res.json())
+                        .then(data => {
+                            valgmuligheter = data;
+                            buildOptions();
+                        });
+                }
+                catch (error) {
+                    console.error(error);
+                }
             }
 
-            function addVote(valg, title) {
+            function toUint8Array(str) {
+                const array = str.map(function(c) { return c.charCodeAt(0) })
+                var buffer = new ArrayBuffer(array.length);
+                var uint8View = new Uint8Array(buffer);
+                uint8View.set(array);
+                return uint8View;
+            }
+
+            async function addVote(valg, title) {
                 console.log(valg);
                 
                 const vote = valg;
                 const voteTitle = title;
-                const voter = "voter1";
-                const ID = "01011970123"
+                const voter = document.querySelector("#NAVN").value;
+                const ID = document.querySelector("#ID").value
 
-                const voterID = "";
+                
+                const msg = Uint8Array.from(voter); // arbitrary length of message in Uint8Array
+                const key = Uint8Array.from("Some KEY"); // 16 bytes or 32 bytes key in Uint8Array
+                const iv = Uint8Array.from(ID); // 12 bytes IV in Uint8Array for AES-GCM mode
+                const additionalData = null; // optional AAD
+                aes.encrypt(msg, key, {name: 'AES-GCM', iv, additionalData, tagLength: 16}).then( (encrypted) => {
+                    console.log(encrypted);
+                });
 
                 try {
-                    let response = await fetch("http://localhost:3000/votes", {
+                    let response = await fetch("http://localhost:3000/vote", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            vote: vote,
-                            voteTitle: voteTitle,
-                            voterID: voterID,
+                            voter_id: voterID,
+                            voted_for_candidate: title,
+                            voted_for_candidate_numb: valg
                         })
                     });
+                    console.log(response);
+                    if (response.status == 200 || response.status == 201) {
+                        console.log("Vote added");
+                    }
+                    else {
+                        console.error(`Vote not added. ERROR: ${response.status} "${response.statusText}"  ${response.message}` );
+                    }
+                }
+                catch (error) {
+                    console.warn(error);
                 }
             }
 
@@ -170,10 +208,10 @@
                         col.classList.add("col");
                         col.id = `col-${j}`;
                         col.innerHTML = `
-                            <div class="card" style="background-image: url(${valg.BGimage})" onclick="addVote(${index}, ${valg.title})">
-                                <img src="${valg.logo}.jpeg" alt="${valg.title}'s logo">
-                                <h2>${valg.title}</h2>
-                                <p>${valg.description}</p>
+                            <div class="card" style="background-image: url(${valg.candidate_bgimg_path})" onclick="addVote(${index}, '${valg.candidate_name}')">
+                                <img src="${valg.candidate_img_path}.jpeg" alt="${valg.candidate_name}'s logo">
+                                <h2>${valg.candidate_name}</h2>
+                                <p>${valg.candidate_description}</p>
                             </div>
                         `;
                         row.appendChild(col);
@@ -182,7 +220,7 @@
                 }
             };
 
-            buildOptions();
+            fetchCandidates();
         </script>
 </body>
 </html>
