@@ -45,6 +45,31 @@ async function checkVotes(voter_id) {
     }
 }
 
+async function getVotes(ID) {
+    try {
+        const result = await pool.query('SELECT * FROM candidates');
+        return result.rows[ID].candidate_votes;
+    } catch (error) {
+        console.error(`500, Error: ${error}`);
+        return;
+    }
+}
+
+async function updateVote(candidateId, candidateName) {
+    try {
+        const votenumb = await getVotes(candidateId);
+        const newnumb = (parseInt(votenumb) + 1).toString();
+        const result = await pool.query(
+            'UPDATE candidates SET candidate_votes = $1 WHERE candidate_name = $2',
+            [newnumb, candidateName]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error(`500, Error: ${error}`);
+        return;
+    }
+}
+
 app.post('/vote', async (req, res) => {
     const { candidateId } = req.body;
     try {
@@ -55,6 +80,7 @@ app.post('/vote', async (req, res) => {
             return;
         }
 
+        updateVote(voted_for_candidate_numb, voted_for_candidate)
         const result = await pool.query(
             'INSERT INTO votes (voted_for_candidate, voter_id, voted_for_candidate_numb) VALUES ($1, $2, $3)',
             [voted_for_candidate, voter_id, voted_for_candidate_numb]
