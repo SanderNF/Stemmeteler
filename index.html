@@ -179,6 +179,7 @@
             }
 
             function buildOptions() {
+                document.querySelector(".container").innerHTML = "";
                 
                 console.log("loaded");
                 rows = Math.ceil(valgmuligheter.length / cloumns);
@@ -209,6 +210,10 @@
                     document.querySelector(".container").appendChild(row);
                 }
             };
+
+
+
+            intervalId = setInterval(fetchCandidates, 10000)
 
             fetchCandidates();
         </script>

@@ -6,10 +6,12 @@ import http from 'http';
 
 dotenv.config();
 
+console.log("Configuring environment variables");
 const { Pool } = pkg;
 const app = express();
 const port = 3000;
 
+console.log("Configuring pool");
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -18,9 +20,12 @@ const pool = new Pool({
     port: 5432,
 });
 
+console.log("Configuring app");
 app.use(express.json());
 app.use(cors());
 
+
+console.log("defining functions");
 // Function to send logs to monitor.js
 function sendLogToMonitor(logData) {
     const options = {
@@ -45,6 +50,42 @@ function sendLogToMonitor(logData) {
 
     req.write(JSON.stringify(logData));
     req.end();
+}
+
+async function getLogfromMonitor(resin) {
+    const options = {
+        hostname: 'localhost',
+        port: 3001, // Port where monitor.js is running
+        path: '/logs',
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    let data = {};
+
+    const req = await http.request(options, (res) => {
+        res.on('data', (chunk) => {
+            
+            data = JSON.parse(chunk.toString());
+            for (let i in data.data) {
+                const element = JSON.parse(data.data[i]);
+                data.data[i] = element
+            }
+            resin.json({ status: 201, logs: data.data });
+        });
+        
+    });
+
+    req.on('error', (error) => {
+        console.error(`Error sending log to monitor: ${error.message}`);
+    });
+
+    //req.write(JSON.stringify());
+    req.end();
+    setTimeout(() => { return (data); }, 1500)
+    
 }
 
 async function checkVotes(voter_id) {
@@ -91,6 +132,7 @@ async function updateVote(candidateId, candidateName) {
     }
 }
 
+console.log("Configuring endpoints");
 app.get('/candidates', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM candidates');
@@ -129,13 +171,40 @@ app.post('/vote', async (req, res) => {
     }
 });
 
+app.get('/monitor/1234', async (req, res) => {
+    try {
+        await getLogfromMonitor(res);
+        
+        
+        
+    } catch (error) {
+        res.status(500).json({ status: 500, error: error.message });
+        console.error(error);
+    }
+});
+
+app.param('path', function (req, res, next, id) {
+    sendLogToMonitor({ endpoint: `/${id}`, method: req.method, status: 404, message: `endpoint "/${id}" not found` });
+    res.status(404).json({ status: 404, error: "endpoint not found" });
+    next()
+})
+app.get('/:path', async (req, res) => {
+    //send log handeld by app.param
+});
+app.post('/:path', async (req, res) => {
+    //send log handeld by app.param
+});
+
 app.get('/', async (req, res) => {
     sendLogToMonitor({ endpoint: '/', method: 'GET', status: 200, message: '' });
+    res.status(404).json({ status: 200, message: "no endpoint" });
 });
 app.post('/', async (req, res) => {
     sendLogToMonitor({ endpoint: '/', method: 'POST', status: 200, message: '' });
+    res.status(404).json({ status: 200, message: "no endpoint" });
 });
 
 app.listen(port, () => {
-    console.info(`Server is running on http://localhost:${port}`);
+    console.log("\x1b[H \u001b[0J \u001b[1J \u001b[2J");
+    console.log(`\x1b[H \x1b[35m Server is running on http://localhost:${port} \x1b[0m`);
 });
