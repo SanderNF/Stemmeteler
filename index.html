@@ -114,28 +114,7 @@
 
             cloumns = 3;
 
-            valgmuligheter = [
-                {
-                    title: "valg #1",
-                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
-                    BGimage: "BG-IMGs/BG-IMG-1",
-                },
-                {
-                    title: "valg #2",
-                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
-                    BGimage: "BG-IMGs/BG-IMG-2",
-                },
-                {
-                    title: "valg #3",
-                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
-                    BGimage: "BG-IMGs/BG-IMG-3",
-                },
-                {
-                    title: "valg #4",
-                    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit",
-                    BGimage: "BG-IMGs/BG-IMG-4",
-                }
-            ]
+            
 
 
             async function fetchCandidates() {
@@ -168,7 +147,7 @@
                 const voter = prompt("Ditt fulle navn:", "Ditt navn");
                 const ID = prompt("Fødselsnumeret ditt:", "xx-xx-xx-xxxxx");
 
-                if (voter == null || voter == "" || ID == null || ID == "xx-xx-xx-xxxxx") {
+                if (voter == null || voter == "Ditt navn" || ID == null || ID == "xx-xx-xx-xxxxx") {
                     alert("Du må fylle ut alle feltene");
                     return;
                 }
@@ -188,6 +167,7 @@
                     console.log(response);
                     if (response.status == 200 || response.status == 201) {
                         console.log("Vote added");
+                        window.location.reload();
                     }
                     else {
                         console.error(`Vote not added. ERROR: ${response.status} "${response.statusText}"  ${response.message}` );
